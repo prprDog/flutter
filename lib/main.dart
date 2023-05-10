@@ -92,74 +92,59 @@ class _MyHomePageState extends State<StatefulWidget> {
             children: [
               Flexible(
                   fit: FlexFit.tight,
-                  child: Transform.scale(
-                      scale: scale,
-                      child: Transform.rotate(
-                        angle: rotation,
-                        child: Transform.translate(
-                            offset: Offset(offsetX, offsetY),
-                            child: GestureDetector(
-                              onScaleStart: (details) => {
-                                preScale = 1.0,
-                                if (details.pointerCount > 1)
-                                  {isScaling = true}
-                                else
-                                  {isScaling = false}
-                              },
-                              onScaleUpdate: (details) => {
-                                setState(() {
-                                  if (!isScaling) {
-                                    matrix4.translate(
-                                        details.focalPointDelta.dx,
-                                        details.focalPointDelta.dy
-                                    );
-                                    List<double> array = [0.0, 0.0, 0.0];
-                                    matrix4.applyToVector3Array(array);
-                                    offsetX += details.focalPointDelta.dx;
-                                    offsetY += details.focalPointDelta.dy;
-                                  } else {
-                                    scale *= details.scale / preScale;
-                                    preScale = details.scale;
-                                    Matrix4 matrix = Matrix4.identity();
-                                    matrix
-                                      ..translate(offsetX, offsetY)
-                                      ..scale(scale)
-                                      ..rotateZ(rotation);
-                                    List<double> array = [0.0, 0.0, 0.0];
-                                    matrix.applyToVector3Array(array);
-                                    offsetX = array[0];
-                                    offsetY = array[1];
-                                  }
-                                })
-                              },
-                              onScaleEnd: (details) => {
-                                if (details.pointerCount == 0)
-                                  {
-                                    //isScaling = false
-                                  }
-                              },
-                              child: Container(
-                                color: Colors.lightBlue,
-                                child: const Image(
-                                    image: AssetImage('assets/robot.png')),
-                              ),
-                            )),
-                      ))),
+                  child: Transform(
+                    transform: matrix4,
+                    child: GestureDetector(
+                      onScaleStart: (details) => {
+                        preScale = 1.0,
+                        if (details.pointerCount > 1)
+                          {isScaling = true}
+                        else
+                          {isScaling = false}
+                      },
+                      onScaleUpdate: (details) => {
+                        setState(() {
+                          if (!isScaling) {
+                            Matrix4 matrix = Matrix4.copy(matrix4)
+                              ..translate(details.focalPointDelta.dx,
+                                  details.focalPointDelta.dy);
+                            setState(() {
+                              matrix4 = matrix;
+                            });
+                          } else {
+                            double deltaScale = details.scale / preScale;
+                            scale *= deltaScale;
+                            preScale = details.scale;
+                            Matrix4 matrix = Matrix4.copy(matrix4)
+                              ..scale(deltaScale);
+                            setState(() {
+                              matrix4 = matrix;
+                            });
+                          }
+                        })
+                      },
+                      onScaleEnd: (details) => {
+                        if (details.pointerCount == 0)
+                          {
+                            //isScaling = false
+                          }
+                      },
+                      child: Container(
+                        color: Colors.lightBlue,
+                        child:
+                            const Image(image: AssetImage('assets/robot.png')),
+                      ),
+                    ),
+                  )),
               ElevatedButton(
                   child: const Text("顺时针旋转"),
                   onPressed: () => {
                         super.setState(() {
-                          rotation += 90 * math.pi / 180;
-                          Matrix4 matrix = Matrix4.identity()
-                            ..rotateZ(rotation)
-                            ..translate(offsetX, offsetY)
-                          ;
-                          List<double> array = [0.0, 0.0, 0.0];
-                          matrix.applyToVector3Array(array);
-                          setState(() {
-                            offsetX = array[0];
-                            offsetY = array[1];
-                          });
+                          double angle = 90 * math.pi / 180;
+                          rotation += angle;
+                          Matrix4 matrix = Matrix4.copy(matrix4)
+                            ..rotateZ(angle);
+                          matrix4 = matrix;
                         })
                       })
             ],
