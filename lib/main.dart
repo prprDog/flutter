@@ -91,51 +91,59 @@ class _MyHomePageState extends State<StatefulWidget> {
           child: Column(
             children: [
               Flexible(
-                  fit: FlexFit.tight,
-                  child: Transform(
-                    transform: matrix4,
-                    child: GestureDetector(
-                      onScaleStart: (details) => {
-                        preScale = 1.0,
-                        if (details.pointerCount > 1)
-                          {isScaling = true}
-                        else
-                          {isScaling = false}
-                      },
-                      onScaleUpdate: (details) => {
-                        setState(() {
-                          if (!isScaling) {
-                            Matrix4 matrix = Matrix4.copy(matrix4)
-                              ..translate(details.focalPointDelta.dx,
-                                  details.focalPointDelta.dy);
-                            setState(() {
-                              matrix4 = matrix;
-                            });
-                          } else {
-                            double deltaScale = details.scale / preScale;
-                            scale *= deltaScale;
-                            preScale = details.scale;
-                            Matrix4 matrix = Matrix4.copy(matrix4)
-                              ..scale(deltaScale);
-                            setState(() {
-                              matrix4 = matrix;
-                            });
-                          }
-                        })
-                      },
-                      onScaleEnd: (details) => {
-                        if (details.pointerCount == 0)
-                          {
-                            //isScaling = false
-                          }
-                      },
-                      child: Container(
-                        color: Colors.lightBlue,
-                        child:
-                            const Image(image: AssetImage('assets/robot.png')),
-                      ),
-                    ),
-                  )),
+                child: GestureDetector(
+                  onScaleStart: (details) => {
+                    preScale = 1.0,
+                    if (details.pointerCount > 1) {isScaling = true}
+                    /*  else
+                          {isScaling = false}*/
+                  },
+                  onScaleUpdate: (details) => {
+                    setState(() {
+                      if (!isScaling) {
+                        offsetX += details.focalPointDelta.dx;
+                        offsetY += details.focalPointDelta.dy;
+                        Matrix4 matrix = Matrix4.identity()
+                          ..translate(offsetX, offsetY)
+                          ..scale(scale)
+                          ..rotateZ(rotation);
+
+                        print('deltax: ${details.focalPointDelta.dx}');
+                        matrix4 = matrix;
+                      } else {
+                        double deltaScale = details.scale / preScale;
+                        scale *= deltaScale;
+                        preScale = details.scale;
+                        Matrix4 matrix = Matrix4.copy(matrix4)
+                          ..scale(deltaScale);
+                        matrix4 = matrix;
+                      }
+                    })
+                  },
+                  onScaleEnd: (details) => {
+                    if (details.pointerCount == 0) {isScaling = false}
+                  },
+                  child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.amber,
+                      alignment: Alignment.topLeft,
+                      child: Transform(
+                        transform: matrix4,
+                        child: Container(
+                          width: 300,
+                          height: 50,
+                          color: Colors.lightBlue,
+                          alignment: Alignment.topLeft,
+                          child: Container(
+                            alignment: Alignment.topLeft,
+                            color: Colors.white,
+                            child: Image(image: AssetImage('assets/robot.png')),
+                          ),
+                        ),
+                      )),
+                ),
+              ),
               ElevatedButton(
                   child: const Text("顺时针旋转"),
                   onPressed: () => {
@@ -149,6 +157,41 @@ class _MyHomePageState extends State<StatefulWidget> {
                       })
             ],
           )),
+    );
+  }
+
+  Widget EditContainer(Widget child) {
+    return Transform(
+      transform: matrix4,
+      child: GestureDetector(
+        onScaleStart: (details) => {
+          preScale = 1.0,
+          if (details.pointerCount > 1) {isScaling = true}
+          /*  else
+                          {isScaling = false}*/
+        },
+        onScaleUpdate: (details) => {
+          setState(() {
+            if (!isScaling) {
+              Matrix4 matrix = Matrix4.copy(matrix4)
+                ..translate(
+                    details.focalPointDelta.dx, details.focalPointDelta.dy);
+              matrix4 = matrix;
+            } else {
+              double deltaScale = details.scale / preScale;
+              scale *= deltaScale;
+              preScale = details.scale;
+              Matrix4 matrix = Matrix4.copy(matrix4)..scale(deltaScale);
+              matrix4 = matrix;
+            }
+          })
+        },
+        onScaleEnd: (details) => {
+          if (details.pointerCount == 0) {isScaling = false}
+        },
+        //backgroud
+        child: child,
+      ),
     );
   }
 }
