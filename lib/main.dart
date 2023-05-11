@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'package:fluttertest/edit.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -72,9 +74,10 @@ class _MyHomePageState extends State<StatefulWidget> {
   double offsetY = 0.0;
   double scale = 1.0;
   double preScale = 1.0;
-  double rotation = 0.0;
   bool isScaling = false;
   Matrix4 matrix4 = Matrix4.identity();
+  Matrix4 componentMatrix4 = Matrix4.identity();
+
 
   @override
   Widget build(BuildContext context) {
@@ -105,8 +108,7 @@ class _MyHomePageState extends State<StatefulWidget> {
                         offsetY += details.focalPointDelta.dy;
                         Matrix4 matrix = Matrix4.identity()
                           ..translate(offsetX, offsetY)
-                          ..scale(scale)
-                          ..rotateZ(rotation);
+                          ..scale(scale) /*..rotateZ(rotation)*/;
 
                         print('deltax: ${details.focalPointDelta.dx}');
                         matrix4 = matrix;
@@ -128,70 +130,69 @@ class _MyHomePageState extends State<StatefulWidget> {
                       height: double.infinity,
                       color: Colors.amber,
                       alignment: Alignment.topLeft,
-                      child: Transform(
-                        transform: matrix4,
-                        child: Container(
-                          width: 300,
-                          height: 50,
-                          color: Colors.lightBlue,
-                          alignment: Alignment.topLeft,
-                          child: Container(
-                            alignment: Alignment.topLeft,
-                            color: Colors.white,
-                            child: Image(image: AssetImage('assets/robot.png')),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Transform(
+                            transform: matrix4,
+                            child: Align(
+                                alignment: Alignment.topLeft,
+                                child: Container(
+                                  width: 300,
+                                  height: 50,
+                                  color: Colors.lightBlue,
+                                  alignment: Alignment.topLeft,
+                                )),
                           ),
-                        ),
+                          Transform(
+                            transform: matrix4,
+                            child: EditContainer(
+                              matrix4: componentMatrix4,
+                              moveCallback: (ScaleUpdateDetails details) {
+                                Matrix4 matrix = Matrix4.copy(componentMatrix4)
+                                  ..translate(details.focalPointDelta.dx,
+                                      details.focalPointDelta.dy);
+                                setState(() {
+                                  componentMatrix4 = matrix;
+                                });
+                              },
+                              child: Align(
+                                alignment: Alignment.topLeft,
+                                child: Container(
+                                    width: 50,
+                                    height: 50,
+                                    alignment: Alignment.topLeft,
+                                    color: Colors.white,
+                                    child: const Image(
+                                        image: AssetImage('assets/robot.png'))),
+                              ),
+                            ),
+                          )
+                        ],
                       )),
                 ),
               ),
-              ElevatedButton(
-                  child: const Text("顺时针旋转"),
-                  onPressed: () => {
+              Row(
+                children: [
+                  ElevatedButton(
+                      child: const Text("顺时针旋转"),
+                      onPressed: () => {
                         super.setState(() {
                           double angle = 90 * math.pi / 180;
-                          rotation += angle;
-                          Matrix4 matrix = Matrix4.copy(matrix4)
-                            ..rotateZ(angle);
-                          matrix4 = matrix;
+                          Matrix4 matrix = Matrix4.copy(componentMatrix4)
+                            ..translate(50 / 2, 50 / 2)
+                            ..rotateZ(angle)
+                            ..translate(-50 / 2, -50 / 2);
+                          componentMatrix4 = matrix;
                         })
-                      })
+                      }),
+                  ElevatedButton(onPressed: () => {
+
+                  }, child: Text("添加"))
+                ],
+              )
             ],
           )),
-    );
-  }
-
-  Widget EditContainer(Widget child) {
-    return Transform(
-      transform: matrix4,
-      child: GestureDetector(
-        onScaleStart: (details) => {
-          preScale = 1.0,
-          if (details.pointerCount > 1) {isScaling = true}
-          /*  else
-                          {isScaling = false}*/
-        },
-        onScaleUpdate: (details) => {
-          setState(() {
-            if (!isScaling) {
-              Matrix4 matrix = Matrix4.copy(matrix4)
-                ..translate(
-                    details.focalPointDelta.dx, details.focalPointDelta.dy);
-              matrix4 = matrix;
-            } else {
-              double deltaScale = details.scale / preScale;
-              scale *= deltaScale;
-              preScale = details.scale;
-              Matrix4 matrix = Matrix4.copy(matrix4)..scale(deltaScale);
-              matrix4 = matrix;
-            }
-          })
-        },
-        onScaleEnd: (details) => {
-          if (details.pointerCount == 0) {isScaling = false}
-        },
-        //backgroud
-        child: child,
-      ),
     );
   }
 }
