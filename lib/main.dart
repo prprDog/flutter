@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-
 import 'package:fluttertest/edit.dart';
 
 void main() {
@@ -50,10 +49,19 @@ class _SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [Text("第二页")],
+      body: Align(
+        alignment: Alignment.topLeft,
+        child: Stack(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Transform.rotate(
+                angle: 45 * math.pi / 180,
+                child: Container(child: Text('测试'), color: Colors.lightBlue,),
+              ),
+            )
+
+          ],
         ),
       ),
     );
@@ -146,34 +154,8 @@ class _MyHomePageState extends State<StatefulWidget> {
                           for (var value in list)
                             ImageComponent(
                               matrix4: matrix4,
-                              x: value.x,
-                              y: value.y,
-                              rotation: value.rotation,
-                              width: 50,
-                              height: 50,
+                              data: value,
                             )
-                          /*for (var value in list)
-                            EditContainer(
-                              matrix4: matrix4.multiplied(componentMatrix4),
-                              moveCallback: (ScaleUpdateDetails details) {
-                                Matrix4 matrix = Matrix4.copy(componentMatrix4)
-                                  ..translate(details.focalPointDelta.dx,
-                                      details.focalPointDelta.dy);
-                                setState(() {
-                                  componentMatrix4 = matrix;
-                                });
-                              },
-                              child: Align(
-                                alignment: Alignment.topLeft,
-                                child: Container(
-                                    width: 50,
-                                    height: 50,
-                                    alignment: Alignment.topLeft,
-                                    color: Colors.white,
-                                    child: const Image(
-                                        image: AssetImage('assets/robot.png'))),
-                              ),
-                            )*/
                         ],
                       )),
                 ),
@@ -185,19 +167,24 @@ class _MyHomePageState extends State<StatefulWidget> {
                       onPressed: () => {
                             super.setState(() {
                               double rotation = 90 + list[0].rotation;
-                              ComponentData data = ComponentData(rotation: rotation, x: list[0].x, y: list[0].y);
-                              //list.removeAt(0);
-                              list.add(data);
-                              //list[0].rotation = rotation;
+                              list[0].rotation = rotation;
                             })
                           }),
                   ElevatedButton(
                       onPressed: () => {
                             setState(() {
-                              list.add(
-                                  ComponentData(rotation: 90, x: 100, y: 100));
-                              list.add(
-                                  ComponentData(rotation: 180, x: 0, y: 0));
+                              list.add(ComponentData(
+                                  rotation: 90,
+                                  x: 100,
+                                  y: 100,
+                                  width: 50,
+                                  height: 50));
+                              list.add(ComponentData(
+                                  rotation: 180,
+                                  x: 0,
+                                  y: 0,
+                                  width: 50,
+                                  height: 50));
                             })
                           },
                       child: Text("添加"))

@@ -32,20 +32,9 @@ class _EditContainerState extends State<EditContainer> {
 
 class ImageComponent extends StatefulWidget {
   final Matrix4 matrix4;
-  double x;
-  double y;
-  double rotation;
-  double width;
-  double height;
+  ComponentData data;
 
-  ImageComponent(
-      {super.key,
-      required this.matrix4,
-      required this.x,
-      required this.y,
-      required this.rotation,
-      required this.width,
-      required this.height});
+  ImageComponent({super.key, required this.matrix4, required this.data});
 
   @override
   State<StatefulWidget> createState() {
@@ -60,36 +49,45 @@ class _ImageComponent extends State<ImageComponent> {
   @override
   void initState() {
     super.initState();
-    double angle = widget.rotation * math.pi / 180;
+    double angle = widget.data.rotation * math.pi / 180;
     componentMatrix4
-      ..translate(widget.x, widget.y)
-      ..translate(widget.width / 2, widget.height / 2)
+      ..translate(widget.data.x, widget.data.y)
+      ..translate(widget.data.width / 2, widget.data.height / 2)
       ..rotateZ(angle)
-      ..translate(-widget.width / 2, -widget.height / 2);
+      ..translate(-widget.data.width / 2, -widget.data.height / 2);
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return EditContainer(
-      matrix4: widget.matrix4.multiplied(componentMatrix4),
-      moveCallback: (ScaleUpdateDetails details) {
-        Matrix4 matrix = Matrix4.copy(componentMatrix4)
-          ..translate(details.focalPointDelta.dx, details.focalPointDelta.dy);
-        setState(() {
-          componentMatrix4 = matrix;
-        });
-      },
-      child: Align(
-        alignment: Alignment.topLeft,
-        child: Container(
-            width: widget.width,
-            height: widget.height,
+    return Transform(
+        transform: widget.matrix4,
+        child: Align(
             alignment: Alignment.topLeft,
-            color: Colors.white,
-            child: const Image(image: AssetImage('assets/robot.png'))),
-      ),
-    );
+            child: Transform.translate(
+                offset: Offset(widget.data.x, widget.data.y),
+                child: GestureDetector(
+                  onScaleUpdate: (details) => {
+                    setState(() {
+                      Matrix4 matrix = Matrix4.copy(componentMatrix4)
+                        ..translate(details.focalPointDelta.dx,
+                            details.focalPointDelta.dy);
+                      componentMatrix4 = matrix;
+                      widget.data.x += details.focalPointDelta.dx;
+                      widget.data.y += details.focalPointDelta.dy;
+                    })
+                  },
+                  child: Transform.rotate(
+                    angle: widget.data.rotation * math.pi / 180,
+                    child: Container(
+                        width: widget.data.width,
+                        height: widget.data.height,
+                        alignment: Alignment.topLeft,
+                        color: Colors.white,
+                        child:
+                            const Image(image: AssetImage('assets/robot.png'))),
+                  ),
+                ))));
   }
 }
 
@@ -97,6 +95,13 @@ class ComponentData {
   double rotation;
   double x;
   double y;
+  double width;
+  double height;
 
-  ComponentData({required this.rotation, required this.x, required this.y});
+  ComponentData(
+      {required this.rotation,
+      required this.x,
+      required this.y,
+      required this.width,
+      required this.height});
 }
