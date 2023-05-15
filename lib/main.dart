@@ -76,8 +76,7 @@ class _MyHomePageState extends State<StatefulWidget> {
   double preScale = 1.0;
   bool isScaling = false;
   Matrix4 matrix4 = Matrix4.identity();
-  Matrix4 componentMatrix4 = Matrix4.identity();
-
+  List<ComponentData> list = [];
 
   @override
   Widget build(BuildContext context) {
@@ -144,10 +143,18 @@ class _MyHomePageState extends State<StatefulWidget> {
                                   alignment: Alignment.topLeft,
                                 )),
                           ),
-                          Transform(
-                            transform: matrix4,
-                            child: EditContainer(
-                              matrix4: componentMatrix4,
+                          for (var value in list)
+                            ImageComponent(
+                              matrix4: matrix4,
+                              x: value.x,
+                              y: value.y,
+                              rotation: value.rotation,
+                              width: 50,
+                              height: 50,
+                            )
+                          /*for (var value in list)
+                            EditContainer(
+                              matrix4: matrix4.multiplied(componentMatrix4),
                               moveCallback: (ScaleUpdateDetails details) {
                                 Matrix4 matrix = Matrix4.copy(componentMatrix4)
                                   ..translate(details.focalPointDelta.dx,
@@ -166,8 +173,7 @@ class _MyHomePageState extends State<StatefulWidget> {
                                     child: const Image(
                                         image: AssetImage('assets/robot.png'))),
                               ),
-                            ),
-                          )
+                            )*/
                         ],
                       )),
                 ),
@@ -177,18 +183,24 @@ class _MyHomePageState extends State<StatefulWidget> {
                   ElevatedButton(
                       child: const Text("顺时针旋转"),
                       onPressed: () => {
-                        super.setState(() {
-                          double angle = 90 * math.pi / 180;
-                          Matrix4 matrix = Matrix4.copy(componentMatrix4)
-                            ..translate(50 / 2, 50 / 2)
-                            ..rotateZ(angle)
-                            ..translate(-50 / 2, -50 / 2);
-                          componentMatrix4 = matrix;
-                        })
-                      }),
-                  ElevatedButton(onPressed: () => {
-
-                  }, child: Text("添加"))
+                            super.setState(() {
+                              double rotation = 90 + list[0].rotation;
+                              ComponentData data = ComponentData(rotation: rotation, x: list[0].x, y: list[0].y);
+                              //list.removeAt(0);
+                              list.add(data);
+                              //list[0].rotation = rotation;
+                            })
+                          }),
+                  ElevatedButton(
+                      onPressed: () => {
+                            setState(() {
+                              list.add(
+                                  ComponentData(rotation: 90, x: 100, y: 100));
+                              list.add(
+                                  ComponentData(rotation: 180, x: 0, y: 0));
+                            })
+                          },
+                      child: Text("添加"))
                 ],
               )
             ],
