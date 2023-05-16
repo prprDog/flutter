@@ -62,10 +62,10 @@ class _ImageComponent extends State<ImageComponent> {
     // TODO: implement build
     return Transform(
         transform: widget.matrix4,
-        child: Align(
-            alignment: Alignment.topLeft,
-            child: Transform.translate(
-                offset: Offset(widget.data.x, widget.data.y),
+        child: Transform.translate(
+            offset: Offset(widget.data.x, widget.data.y),
+            child: Align(
+                alignment: Alignment.topLeft,
                 child: GestureDetector(
                   onScaleUpdate: (details) => {
                     setState(() {
@@ -85,7 +85,7 @@ class _ImageComponent extends State<ImageComponent> {
                         alignment: Alignment.topLeft,
                         color: Colors.white,
                         child:
-                            const Image(image: AssetImage('assets/robot.png'))),
+                        const Image(image: AssetImage('assets/robot.png'))),
                   ),
                 ))));
   }

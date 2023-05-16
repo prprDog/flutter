@@ -57,10 +57,12 @@ class _SettingPage extends StatelessWidget {
               alignment: Alignment.topLeft,
               child: Transform.rotate(
                 angle: 45 * math.pi / 180,
-                child: Container(child: Text('测试'), color: Colors.lightBlue,),
+                child: Container(
+                  child: Text('测试'),
+                  color: Colors.lightBlue,
+                ),
               ),
             )
-
           ],
         ),
       ),
