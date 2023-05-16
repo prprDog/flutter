@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertest/bean.dart';
+import 'package:fluttertest/database.dart';
 import 'dart:math' as math;
 import 'package:fluttertest/edit.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,39 +34,58 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class SettingPage extends StatelessWidget {
+class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Second Page',
-      theme: ThemeData(primarySwatch: Colors.lightBlue),
-      home: _SettingPage(),
-    );
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return _SettingPage();
   }
 }
 
-class _SettingPage extends StatelessWidget {
+class _SettingPage extends State<StatefulWidget> {
+  double x = 0;
+  double y = 0;
+  Matrix4 testMatrix = Matrix4.identity();
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
       body: Align(
         alignment: Alignment.topLeft,
-        child: Stack(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Transform.rotate(
-                angle: 45 * math.pi / 180,
-                child: Container(
-                  child: Text('测试'),
-                  color: Colors.lightBlue,
+        child: Container(
+          color: Colors.amber,
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            children: [
+              GestureDetector(
+                onScaleUpdate: (details) => {
+                  super.setState(() {
+                    x += details.focalPointDelta.dx;
+                    y += details.focalPointDelta.dy;
+                    Matrix4.copy(testMatrix).translate(
+                        details.focalPointDelta.dx, details.focalPointDelta.dy);
+                    print('test-x${x} y${y}');
+                  })
+                },
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Transform(
+                    transform: testMatrix,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      child: Text('测试'),
+                      color: Colors.lightBlue,
+                    ),
+                  ),
                 ),
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -86,7 +108,7 @@ class _MyHomePageState extends State<StatefulWidget> {
   double preScale = 1.0;
   bool isScaling = false;
   Matrix4 matrix4 = Matrix4.identity();
-  List<ComponentData> list = [];
+  Label label = Label(width: 300, height: 50, color: Colors.lightBlue.value, components: []);
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +175,7 @@ class _MyHomePageState extends State<StatefulWidget> {
                                   alignment: Alignment.topLeft,
                                 )),
                           ),
-                          for (var value in list)
+                          for (var value in label.components)
                             ImageComponent(
                               matrix4: matrix4,
                               data: value,
@@ -162,34 +184,64 @@ class _MyHomePageState extends State<StatefulWidget> {
                       )),
                 ),
               ),
-              Row(
+              Column(
                 children: [
-                  ElevatedButton(
-                      child: const Text("顺时针旋转"),
-                      onPressed: () => {
-                            super.setState(() {
-                              double rotation = 90 + list[0].rotation;
-                              list[0].rotation = rotation;
-                            })
-                          }),
-                  ElevatedButton(
-                      onPressed: () => {
-                            setState(() {
-                              list.add(ComponentData(
-                                  rotation: 90,
-                                  x: 100,
-                                  y: 100,
-                                  width: 50,
-                                  height: 50));
-                              list.add(ComponentData(
-                                  rotation: 180,
-                                  x: 0,
-                                  y: 0,
-                                  width: 50,
-                                  height: 50));
-                            })
+                  Row(children: [
+                    ElevatedButton(
+                        child: const Text("顺时针旋转"),
+                        onPressed: () => {
+                          super.setState(() {
+                            double rotation = 90 + label.components[0].rotation;
+                            label.components[0].rotation = rotation;
+                          })
+                        }),
+                    ElevatedButton(
+                        onPressed: () => {
+                          setState(() {
+                            label.components.add(ComponentData(
+                                id: const Uuid().v1(),
+                                rotation: 90,
+                                x: 100,
+                                y: 100,
+                                width: 50,
+                                height: 50));
+                            label.components.add(ComponentData(
+                                id: const Uuid().v1(),
+                                rotation: 180,
+                                x: 0,
+                                y: 0,
+                                width: 50,
+                                height: 50));
+                          })
+                        },
+                        child: Text("添加")),
+                    ElevatedButton(onPressed: () {
+                      label.components.clear();
+                    }, child: const Text('清空画布'))
+                  ],),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                          onPressed: () async {
+                            insertLabel(label);
+                            //insertList(label.components);
                           },
-                      child: Text("添加"))
+                          child: const Text("保存")),
+                      ElevatedButton(
+                          onPressed: () async {
+                            var result = await queryComponent();
+                            setState(() {
+                              label.components = result;
+                            });
+                          },
+                          child: const Text("加载")),
+                      ElevatedButton(
+                          onPressed: () async {
+                            deleteAllComponent();
+                          },
+                          child: Text("清空"))
+                    ],
+                  )
                 ],
               )
             ],

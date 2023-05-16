@@ -30,6 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  sqflite:
+  path:
+  uuid: ^3.0.4
+  json_annotation: ^4.4.0
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -39,6 +44,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  build_runner: ^2.1.8
+  json_serializable: ^6.1.5
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

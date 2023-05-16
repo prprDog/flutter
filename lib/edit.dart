@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
+import 'package:fluttertest/bean.dart';
+
 class EditContainer extends StatefulWidget {
   final Widget child;
   final Matrix4 matrix4;
@@ -85,23 +87,8 @@ class _ImageComponent extends State<ImageComponent> {
                         alignment: Alignment.topLeft,
                         color: Colors.white,
                         child:
-                        const Image(image: AssetImage('assets/robot.png'))),
+                            const Image(image: AssetImage('assets/robot.png'))),
                   ),
                 ))));
   }
-}
-
-class ComponentData {
-  double rotation;
-  double x;
-  double y;
-  double width;
-  double height;
-
-  ComponentData(
-      {required this.rotation,
-      required this.x,
-      required this.y,
-      required this.width,
-      required this.height});
 }
